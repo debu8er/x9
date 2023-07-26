@@ -1,5 +1,20 @@
 import argparse
+import sys, tldextract
 from urllib.parse import urlparse, parse_qs, urlencode
+import time
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 
 def append_hello_to_params(url):
     parsed_url = urlparse(url)
@@ -27,11 +42,18 @@ def create_hello_params_url(url):
     return modified_url
 
 def param(value,chunk,url):
-    with open(args.parameters) as f:
-        lines = f.readlines()
 
     lists = []
     final = []
+
+
+    if "," in args.parameters:
+        lines = args.parameters.split(',')
+    
+    else:
+        with open(args.parameters) as f:
+            lines = f.readlines()
+
 
     for i in range(0, len(lines), chunk):
         sublist = lines[i:i+chunk]
@@ -85,37 +107,76 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if args.chunk:
+        chunk = args.chunk
+    if not args.chunk:
+        chunk = 15
+
+    stdin = False
+    if not sys.stdin.isatty():
+        input_urls = [line.strip() for line in sys.stdin.readlines()]
+        stdin = True
+
     def gs_normal():
-        if not args.silent and args.list and args.parameters:
-            with open(args.list, "r") as f:
-                for url in f:
-                    parsed_url = urlparse(url)
-                    modified_url = parsed_url._replace(query='').geturl()
-                    for i in param(args.value, int(args.chunk),modified_url):
-                        print(i)
-            if args.url and args.list and args.parameters:
-                parsed_url = urlparse(args.url)
-                modified_url = parsed_url._replace(query='').geturl()
-                for i in param(args.value, int(args.chunk),modified_url):
-                    print(i)
-
-
-        if args.output and args.list and args.parameters:
-            with open(args.output,"w") as o:
+        if not args.silent and args.parameters:
+            if args.list:
                 with open(args.list, "r") as f:
                     for url in f:
                         parsed_url = urlparse(url)
                         modified_url = parsed_url._replace(query='').geturl()
-                        for i in param(args.value, int(args.chunk),modified_url):
+                        for i in param(args.value, int(chunk),modified_url):
+                            print(i)
+
+            if args.url:
+                parsed_url = urlparse(args.url)
+                modified_url = parsed_url._replace(query='').geturl()
+                for i in param(args.value, int(chunk),modified_url):
+                    print(i)
+
+
+            if stdin == True:
+                if len(input_urls) == 1:
+                    parsed_url = urlparse(input_urls[0])
+                    modified_url = parsed_url._replace(query='').geturl()
+                    for i in param(args.value, int(chunk),modified_url):
+                        print(i)
+                else:
+                    for url in input_urls:
+                        parsed_url = urlparse(url)
+                        modified_url = parsed_url._replace(query='').geturl()
+                        for i in param(args.value, int(chunk),modified_url):
+                            print(i)
+
+
+        if args.output and args.parameters:
+            o =  open(args.output,"w")
+            if args.list:
+                with open(args.list, "r") as f:
+                    for url in f:
+                        parsed_url = urlparse(url)
+                        modified_url = parsed_url._replace(query='').geturl()
+                        for i in param(args.value, int(chunk),modified_url):
                             o.write(i+'\n')
 
-            if args.url and args.list and args.parameters:
-                with open(args.output,"w") as o:
-                    parsed_url = urlparse(args.url)
-                    modified_url = parsed_url._replace(query='').geturl()
-                    for i in param(args.value, int(args.chunk),modified_url):
-                        o.write(i+'\n')
+            if args.url:
+                parsed_url = urlparse(args.url)
+                modified_url = parsed_url._replace(query='').geturl()
+                for i in param(args.value, int(chunk),modified_url):
+                    o.write(i+'\n')
 
+
+            if stdin == True:
+                if len(input_urls) == 1:
+                    parsed_url = urlparse(url)
+                    modified_url = parsed_url._replace(query='').geturl()
+                    for i in param(args.value, int(chunk),modified_url):
+                        o.write(i+'\n')
+                else:
+                    for url in input_urls:
+                        parsed_url = urlparse(url)
+                        modified_url = parsed_url._replace(query='').geturl()
+                        for i in param(args.value, int(chunk),modified_url):
+                            o.write(i+'\n')
 
     def gs_combine():
         if not args.silent:
@@ -129,54 +190,97 @@ if __name__ == '__main__':
             if args.url:
                         print(append_hello_to_params(args.url))
                         print(create_hello_params_url(args.url))
+            
+
+            if stdin == True:
+                if len(input_urls) == 1:
+                    print(append_hello_to_params(input_urls[0]))
+                    print(create_hello_params_url(input_urls[0]))
+                else:
+                    for url in input_urls:
+                        print(append_hello_to_params(url))
+                        print(create_hello_params_url(url))
+
 
         if args.output:
             w = "w"
             if args.generate_strategy == "all":
                 w = "a"
+            o = open(args.output,w)
+
             if args.list:
-                with open(args.output,w) as o:
                     with open(args.list, "r") as f:
                         for url in f:
                             o.write(append_hello_to_params(url)+'\n')
                             o.write(create_hello_params_url(url)+'\n')
             if args.url:
-                w = "w"
-                if args.generate_strategy == "all":
-                    w = "a"
-                with open(args.output,w) as o:
-                    o.write(append_hello_to_params(args.url)+'\n')
-                    o.write(create_hello_params_url(args.url)+'\n')
+                o.write(append_hello_to_params(args.url)+'\n')
+                o.write(create_hello_params_url(args.url)+'\n')
             
+
+            if stdin == True:
+                if len(input_urls) == 1:
+                    o.write(append_hello_to_params(input_urls[0]+'\n'))
+                    o.write(create_hello_params_url(input_urls[0]+'\n'))
+                else:
+                    for url in input_urls:
+                        o.write(append_hello_to_params(url)+'\n')
+                        o.write(create_hello_params_url(url)+'\n')
 
 
     def gs_ignore():
-        if not args.silent and args.list and args.parameters:
-            with open(args.list, "r") as f:
-                for url in f:
-                    for i in param(args.value, int(args.chunk),url):
-                        print(i.replace('\n',''))
+        if not args.silent and args.parameters:
+            if args.list:
+                with open(args.list, "r") as f:
+                    for url in f:
+                        for i in param(args.value, int(chunk),url):
+                            print(i.replace('\n',''))
             if args.url:
-                for i in param(args.value, int(args.chunk),args.url):
-                    print(i.replace('\n','')+'\n')
+                for i in param(args.value, int(chunk),args.url):
+                    print(i.replace('\n',''))
 
-        if args.output and args.list and args.parameters:
+            if stdin == True and args.parameters:
+                if len(input_urls) == 1:
+                    for i in param(args.value, int(chunk),input_urls[0]):
+                        print(i.replace('\n',''))
+                else:
+                    for url in input_urls:
+                        for i in param(args.value, int(chunk),url):
+                            print(i.replace('\n',''))
+            
+        if args.output and args.parameters:
             w = "w"
             if args.generate_strategy == "all":
                 w = "a"
-            with open(args.output,w) as o:
+            o = open(args.output,w)
+            
+            if args.list:
                 with open(args.list, "r") as f:
                     for url in f:
-                        for i in param(args.value, int(args.chunk),url):
+                        for i in param(args.value, int(chunk),url):
                             o.write(i.replace('\n','')+'\n')
-            if args.url and args.list and args.parameters:
-                w = "w"
-                if args.generate_strategy == "all":
-                    w = "a"
-                with open(args.output,w) as o:
-                    for i in param(args.value, int(args.chunk),args.url):
+            if args.url:
+                for i in param(args.value, int(chunk),args.url):
+                    o.write(i.replace('\n','')+'\n')
+            
+            if stdin == True and args.parameters:
+                if len(input_urls) == 1:
+                    for i in param(args.value, int(chunk),input_urls[0]):
                         o.write(i.replace('\n','')+'\n')
+                else:
+                    for url in input_urls:
+                        for i in param(args.value, int(chunk),url):
+                            o.write(i.replace('\n','')+'\n')
 
+
+if not args.silent:
+    print (bcolors.FAIL + "       ___")
+    print (bcolors.FAIL + "__  __/ _ \ ")
+    print (bcolors.OKGREEN + "\ \/ / (_) |")
+    print (bcolors.ENDC + " >  < \__, |")
+    print (bcolors.OKBLUE + "/_/\_\  /_/")
+    time.sleep(1)
+    print(bcolors.BOLD+"********** Made by debug (Discord: debu8er) **********\n")
 
 if args.generate_strategy == "all":
     gs_normal()
