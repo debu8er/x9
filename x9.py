@@ -118,7 +118,7 @@ if __name__ == '__main__':
         stdin = True
 
     def gs_normal():
-        if not args.silent and args.parameters:
+        if args.parameters:
             if args.list:
                 with open(args.list, "r") as f:
                     for url in f:
@@ -179,31 +179,28 @@ if __name__ == '__main__':
                             o.write(i+'\n')
 
     def gs_combine():
-        if not args.silent:
+        if args.list:
+            with open(args.list, "r") as f:
+                for url in f:
+                    if bool(urlparse(url).query) == True:
+                        print(append_hello_to_params(url))
+                        print(create_hello_params_url(url))
+        if args.url:
+            if bool(urlparse(args.url).query) == True:
+                print(append_hello_to_params(args.url))
+                print(create_hello_params_url(args.url))
+        
 
-            if args.list:
-
-                with open(args.list, "r") as f:
-                    for url in f:
-                        if bool(urlparse(url).query) == True:
-                            print(append_hello_to_params(url))
-                            print(create_hello_params_url(url))
-            if args.url:
-                if bool(urlparse(args.url).query) == True:
-                    print(append_hello_to_params(args.url))
-                    print(create_hello_params_url(args.url))
-            
-
-            if stdin == True:
-                if len(input_urls) == 1:
-                    if bool(urlparse(input_urls[0]).query) == True:
-                        print(append_hello_to_params(input_urls[0]))
-                        print(create_hello_params_url(input_urls[0]))
-                else:
-                    for url in input_urls:
-                        if bool(urlparse(url).query) == True:
-                            print(append_hello_to_params(url))
-                            print(create_hello_params_url(url))
+        if stdin == True:
+            if len(input_urls) == 1:
+                if bool(urlparse(input_urls[0]).query) == True:
+                    print(append_hello_to_params(input_urls[0]))
+                    print(create_hello_params_url(input_urls[0]))
+            else:
+                for url in input_urls:
+                    if bool(urlparse(url).query) == True:
+                        print(append_hello_to_params(url))
+                        print(create_hello_params_url(url))
 
 
         if args.output:
@@ -237,7 +234,7 @@ if __name__ == '__main__':
 
 
     def gs_ignore():
-        if not args.silent and args.parameters:
+        if args.parameters:
             if args.list:
                 with open(args.list, "r") as f:
                     for url in f:
