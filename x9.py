@@ -1,5 +1,5 @@
 import argparse
-import sys, tldextract
+import sys
 from urllib.parse import urlparse, parse_qs, urlencode
 import time
 
@@ -180,26 +180,30 @@ if __name__ == '__main__':
 
     def gs_combine():
         if not args.silent:
+
             if args.list:
 
                 with open(args.list, "r") as f:
                     for url in f:
-
-                        print(append_hello_to_params(url))
-                        print(create_hello_params_url(url))
+                        if bool(urlparse(url).query) == True:
+                            print(append_hello_to_params(url))
+                            print(create_hello_params_url(url))
             if args.url:
-                        print(append_hello_to_params(args.url))
-                        print(create_hello_params_url(args.url))
+                if bool(urlparse(args.url).query) == True:
+                    print(append_hello_to_params(args.url))
+                    print(create_hello_params_url(args.url))
             
 
             if stdin == True:
                 if len(input_urls) == 1:
-                    print(append_hello_to_params(input_urls[0]))
-                    print(create_hello_params_url(input_urls[0]))
+                    if bool(urlparse(input_urls[0]).query) == True:
+                        print(append_hello_to_params(input_urls[0]))
+                        print(create_hello_params_url(input_urls[0]))
                 else:
                     for url in input_urls:
-                        print(append_hello_to_params(url))
-                        print(create_hello_params_url(url))
+                        if bool(urlparse(url).query) == True:
+                            print(append_hello_to_params(url))
+                            print(create_hello_params_url(url))
 
 
         if args.output:
@@ -211,21 +215,25 @@ if __name__ == '__main__':
             if args.list:
                     with open(args.list, "r") as f:
                         for url in f:
-                            o.write(append_hello_to_params(url)+'\n')
-                            o.write(create_hello_params_url(url)+'\n')
+                            if bool(urlparse(url).query) == True:
+                                o.write(append_hello_to_params(url)+'\n')
+                                o.write(create_hello_params_url(url)+'\n')
             if args.url:
-                o.write(append_hello_to_params(args.url)+'\n')
-                o.write(create_hello_params_url(args.url)+'\n')
+                if bool(urlparse(args.url).query) == True:
+                    o.write(append_hello_to_params(args.url)+'\n')
+                    o.write(create_hello_params_url(args.url)+'\n')
             
 
             if stdin == True:
                 if len(input_urls) == 1:
-                    o.write(append_hello_to_params(input_urls[0]+'\n'))
-                    o.write(create_hello_params_url(input_urls[0]+'\n'))
+                    if bool(urlparse(input_urls[0]).query) == True:
+                        o.write(append_hello_to_params(input_urls[0]+'\n'))
+                        o.write(create_hello_params_url(input_urls[0]+'\n'))
                 else:
                     for url in input_urls:
-                        o.write(append_hello_to_params(url)+'\n')
-                        o.write(create_hello_params_url(url)+'\n')
+                        if bool(urlparse(url).query) == True:
+                            o.write(append_hello_to_params(url)+'\n')
+                            o.write(create_hello_params_url(url)+'\n')
 
 
     def gs_ignore():
