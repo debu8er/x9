@@ -27,3 +27,9 @@ optional arguments:
                         combine: Pitchfork combine on the existing parameters
                         ignore: Don't touch the URL and put the wordlist all:
 ```
+
+# Example Command
+
+```
+echo "https://domain.tld?p=debug&id=123" | x9 -p url,file,q -v '"voorivexinjected",<b/voorivexinjected'
+```
