@@ -1,5 +1,5 @@
 import argparse
-from urllib.parse import urlparse, parse_qs, urlencode
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 import time
 import sys
 import os
@@ -33,7 +33,7 @@ def append_hello_to_params(url,value):
 
     else:
         for key in query_params:
-            query_params[key] = [value + value for value in query_params[key]]
+            query_params[key] = [valuee + value for valuee in query_params[key]]
 
         modified_query = urlencode(query_params, doseq=True)
         modified_url = parsed_url._replace(query=modified_query).geturl()
@@ -147,6 +147,9 @@ if __name__ == '__main__':
     combine: Pitchfork combine on the existing parameters
     ignore: Don't touch the URL and put the wordlist
     all: All in one method""")
+    parser.add_argument('-vs', '--value_strategy', choices=['replace', 'suffix'], default='replace', help="""Select the mode strategy from the available choices:
+        replace: Replace the value with gathered value
+        suffix: Append the value to the end of the parameters""")
     args = parser.parse_args()
 
     if args.chunk:
@@ -182,30 +185,60 @@ if __name__ == '__main__':
                             o.write(i + '\n')
 
     def gs_combine():
-        urls = [args.url] if args.url else []
-        if args.list:
-            with open(args.list, "r") as f:
-                urls += [url.strip() for url in f.readlines()]
+        if args.parameters:
+            urls = [args.url] if args.url else []
 
-        if stdin:
-            urls += input_urls
+            if args.list:
+                with open(args.list, "r") as f:
+                    urls += [url.strip() for url in f.readlines()]
 
-        for url in urls:
-            if bool(urlparse(url).query):
-                for i in append_hello_to_params(url,args.value):
-                    print(i)
-                for i in create_hello_params_url(url,args.value):
-                    print(i)
+            if stdin:
+                urls += input_urls
 
-        if args.output:
-            mode = "a" if args.generate_strategy == "all" else "w"
-            with open(args.output, mode) as o:
-                for url in urls:
-                    if bool(urlparse(url).query):
-                        for i in append_hello_to_params(url,args.value):
-                            o.write(append_hello_to_params(url,args.value) + '\n')
-                            o.write(create_hello_params_url(url,args.value) + '\n')
+            for url in urls:
+                parsed_url = urlparse(url)
+                query_params = parse_qs(parsed_url.query)
 
+                if args.value_strategy == "replace":
+                    for key in query_params:
+                        query_params[key] = [args.value]
+
+                    updated_query = urlencode(query_params, doseq=True)
+                    modified_url = urlunparse(parsed_url._replace(query=updated_query))
+
+                    for i in param(args.value, int(chunk), modified_url):
+                        print(i)
+                elif args.value_strategy == "suffix":
+                    for modified_url in append_hello_to_params(url, args.value):
+                        for i in param(args.value, int(chunk), modified_url):
+                            print(i)
+                    for modified_url in create_hello_params_url(url, args.value):
+                        for i in param(args.value, int(chunk), modified_url):
+                            print(i)
+
+            if args.output:
+                with open(args.output, "w") as o:
+
+                    for url in urls:
+                        parsed_url = urlparse(url)
+                        query_params = parse_qs(parsed_url.query)
+
+                        if args.value_strategy == "replace":
+                            for key in query_params:
+                                query_params[key] = [args.value]
+
+                            updated_query = urlencode(query_params, doseq=True)
+                            modified_url = urlunparse(parsed_url._replace(query=updated_query))
+
+                            for i in param(args.value, int(chunk), modified_url):
+                                o.write(i + '\n')
+                        elif args.value_strategy == "suffix":
+                            for modified_url in append_hello_to_params(url, args.value):
+                                for i in param(args.value, int(chunk), modified_url):
+                                    o.write(i + '\n')
+                            for modified_url in create_hello_params_url(url, args.value):
+                                for i in param(args.value, int(chunk), modified_url):
+                                    o.write(i + '\n')
     def gs_ignore():
         if args.parameters:
             urls = [args.url] if args.url else []
