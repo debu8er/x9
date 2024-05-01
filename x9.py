@@ -282,4 +282,3 @@ if __name__ == '__main__':
 
     if args.generate_strategy == "ignore":
         gs_ignore()
-12345
